@@ -480,6 +480,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		try {
 			// Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.
+			// 调用BeanPostProcessors，比如AOP的实现
 			Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
 			if (bean != null) {
 				return bean;
@@ -491,6 +492,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		try {
+			// 会第二次调用BeanPostProcessors
+			// 创建Bean
 			Object beanInstance = doCreateBean(beanName, mbdToUse, args);
 			if (logger.isDebugEnabled()) {
 				logger.debug("Finished creating instance of bean '" + beanName + "'");
@@ -531,6 +534,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			instanceWrapper = this.factoryBeanInstanceCache.remove(beanName);
 		}
 		if (instanceWrapper == null) {
+			// using an appropriate instantiation strategy实例化对象，工厂，构造器
 			instanceWrapper = createBeanInstance(beanName, mbd, args);
 		}
 		Object bean = instanceWrapper.getWrappedInstance();
@@ -555,6 +559,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		// Eagerly cache singletons to be able to resolve circular references
 		// even when triggered by lifecycle interfaces like BeanFactoryAware.
+		// 判断是否需要提前暴露，解决循环依赖问题
 		boolean earlySingletonExposure = (mbd.isSingleton() && this.allowCircularReferences &&
 				isSingletonCurrentlyInCreation(beanName));
 		if (earlySingletonExposure) {
@@ -562,13 +567,16 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				logger.debug("Eagerly caching bean '" + beanName +
 						"' to allow for resolving potential circular references");
 			}
+			// 获取提前暴露的对象，可以解决循环引用的问题，实际上提前暴露出来的bean是放入到了singletonFactories中，key是beanName,value是一个lambda表达式
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
 
 		// Initialize the bean instance.
 		Object exposedObject = bean;
 		try {
+			// 初始化属性 ，第五六次调用后置处理器入口
 			populateBean(beanName, mbd, instanceWrapper);
+			// 第七八次调用后置处理器入口
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
 		catch (Throwable ex) {
@@ -581,7 +589,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 		}
 
+		// 循环依赖检查，spring只能处理单例的循环依赖，其它场景需要抛出异常
 		if (earlySingletonExposure) {
+			// earlySingletonReference只有在检测到有循环依赖才不为空
 			Object earlySingletonReference = getSingleton(beanName, false);
 			if (earlySingletonReference != null) {
 				if (exposedObject == bean) {
@@ -1028,8 +1038,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 				Class<?> targetType = determineTargetType(beanName, mbd);
 				if (targetType != null) {
+					// 执行前置BeanPostProcessors
 					bean = applyBeanPostProcessorsBeforeInstantiation(targetType, beanName);
 					if (bean != null) {
+						// 执行后置BeanPostProcessors
 						bean = applyBeanPostProcessorsAfterInitialization(bean, beanName);
 					}
 				}
@@ -1053,6 +1065,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	@Nullable
 	protected Object applyBeanPostProcessorsBeforeInstantiation(Class<?> beanClass, String beanName) {
 		for (BeanPostProcessor bp : getBeanPostProcessors()) {
+			// // 如果InstantiationAwareBeanPostProcessor的子类的postProcessBeforeInstantiation()方法返回值不为空，表示bean需要被增强
 			if (bp instanceof InstantiationAwareBeanPostProcessor) {
 				InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
 				Object result = ibp.postProcessBeforeInstantiation(beanClass, beanName);
