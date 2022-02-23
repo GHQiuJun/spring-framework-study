@@ -12,5 +12,5 @@
 
 - gradle -> spring -> Tasks -> ide -> eclipse 执行
 
-### Tips
+### tips
 - 配置好正确的jdk和gradle版本，可以减少99%的异常
