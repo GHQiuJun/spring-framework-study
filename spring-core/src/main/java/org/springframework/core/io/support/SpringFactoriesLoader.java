@@ -88,15 +88,18 @@ public abstract class SpringFactoriesLoader {
 	public static <T> List<T> loadFactories(Class<T> factoryClass, @Nullable ClassLoader classLoader) {
 		Assert.notNull(factoryClass, "'factoryClass' must not be null");
 		ClassLoader classLoaderToUse = classLoader;
+		// 获取classLoader
 		if (classLoaderToUse == null) {
 			classLoaderToUse = SpringFactoriesLoader.class.getClassLoader();
 		}
+		// 获取key=factoryClass的需要加载的类
 		List<String> factoryNames = loadFactoryNames(factoryClass, classLoaderToUse);
 		if (logger.isTraceEnabled()) {
 			logger.trace("Loaded [" + factoryClass.getName() + "] names: " + factoryNames);
 		}
 		List<T> result = new ArrayList<>(factoryNames.size());
 		for (String factoryName : factoryNames) {
+			// 实例化并加入结果集
 			result.add(instantiateFactory(factoryName, factoryClass, classLoaderToUse));
 		}
 		AnnotationAwareOrderComparator.sort(result);
@@ -115,24 +118,31 @@ public abstract class SpringFactoriesLoader {
 	 */
 	public static List<String> loadFactoryNames(Class<?> factoryClass, @Nullable ClassLoader classLoader) {
 		String factoryClassName = factoryClass.getName();
+		// 从所有的jar包中找到META-INF/spring.factories文件
+		// 然后从文件中解析出key=factoryClass类名称的所有value值
 		return loadSpringFactories(classLoader).getOrDefault(factoryClassName, Collections.emptyList());
 	}
 
 	private static Map<String, List<String>> loadSpringFactories(@Nullable ClassLoader classLoader) {
+		// 从缓存中获取
 		MultiValueMap<String, String> result = cache.get(classLoader);
 		if (result != null) {
 			return result;
 		}
 
 		try {
+			// 获取所有资源文件url classLoader
 			Enumeration<URL> urls = (classLoader != null ?
 					classLoader.getResources(FACTORIES_RESOURCE_LOCATION) :
 					ClassLoader.getSystemResources(FACTORIES_RESOURCE_LOCATION));
 			result = new LinkedMultiValueMap<>();
+			// 遍历资源文件
 			while (urls.hasMoreElements()) {
 				URL url = urls.nextElement();
 				UrlResource resource = new UrlResource(url);
+				// 根据资源文件URL解析properties文件，得到对应的一组@Configuration类
 				Properties properties = PropertiesLoaderUtils.loadProperties(resource);
+				// 组装为key-value的数据格式
 				for (Map.Entry<?, ?> entry : properties.entrySet()) {
 					String factoryClassName = ((String) entry.getKey()).trim();
 					for (String factoryName : StringUtils.commaDelimitedListToStringArray((String) entry.getValue())) {
@@ -157,6 +167,7 @@ public abstract class SpringFactoriesLoader {
 				throw new IllegalArgumentException(
 						"Class [" + instanceClassName + "] is not assignable to [" + factoryClass.getName() + "]");
 			}
+			// 反射创建
 			return (T) ReflectionUtils.accessibleConstructor(instanceClass).newInstance();
 		}
 		catch (Throwable ex) {
