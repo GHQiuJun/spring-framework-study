@@ -62,6 +62,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * through {@link #register} calls and then manually {@linkplain #refresh refreshed}.
 	 */
 	public AnnotationConfigApplicationContext() {
+		// 注册一些BeanFactoryPostProcessor处理器，需关注ConfigurationClassPostProcessor
 		this.reader = new AnnotatedBeanDefinitionReader(this);
 		this.scanner = new ClassPathBeanDefinitionScanner(this);
 	}
@@ -83,7 +84,9 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * e.g. {@link Configuration @Configuration} classes
 	 */
 	public AnnotationConfigApplicationContext(Class<?>... annotatedClasses) {
+		// 需要的BeanFactoryPostProcessor BD会在里面注册
 		this();
+		// 注册Bean配置类BD
 		register(annotatedClasses);
 		refresh();
 	}

@@ -63,6 +63,7 @@ public @interface Conditional {
 
 	/**
 	 * All {@link Condition} classes that must {@linkplain Condition#matches match}
+	 * 接收一个Class数组，数组元素实现Condition接口
 	 * in order for the component to be registered.
 	 */
 	Class<? extends Condition>[] value();

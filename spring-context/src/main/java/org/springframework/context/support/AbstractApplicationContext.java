@@ -575,6 +575,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 			// Prepare the bean factory for use in this context.
 			// 设置beanFactory的基本属性
+			// 加载环境相关配置参数
 			prepareBeanFactory(beanFactory);
 
 			try {
@@ -583,7 +584,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				postProcessBeanFactory(beanFactory);
 
 				// Invoke factory processors registered as beans in the context.
-				// 调用BeanFactoryPostProcessor对BD进行增强
+				// 调用BeanFactoryPostProcessor对BD进行增强(BeanDefinitionRegistryPostProcessor会注入一些新的BD)
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
@@ -760,8 +761,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * <p>Must be called before singleton instantiation.
 	 */
 	protected void invokeBeanFactoryPostProcessors(ConfigurableListableBeanFactory beanFactory) {
-		PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, getBeanFactoryPostProcessors());
 
+		// getBeanFactoryPostProcessors(): 拿到当前应用上下文beanFactoryPostProcessors变量中的值
+		// invokeBeanFactoryPostProcessors: 实例化并调用所有已注册的BeanFactoryPostProcessor
+		// 如何添加自定义BeanFactoryPostProcessor ？？？
+		PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, getBeanFactoryPostProcessors());
 		// Detect a LoadTimeWeaver and prepare for weaving, if found in the meantime
 		// (e.g. through an @Bean method registered by ConfigurationClassPostProcessor)
 		if (beanFactory.getTempClassLoader() == null && beanFactory.containsBean(LOAD_TIME_WEAVER_BEAN_NAME)) {
@@ -936,7 +940,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.freezeConfiguration();
 
 		// Instantiate all remaining (non-lazy-init) singletons.
-		// 实例化和创建所有非懒加载的单例
+		// 创建所有非懒加载的单例
 		beanFactory.preInstantiateSingletons();
 	}
 

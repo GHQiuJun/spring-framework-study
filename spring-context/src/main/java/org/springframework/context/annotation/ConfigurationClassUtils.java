@@ -84,6 +84,7 @@ abstract class ConfigurationClassUtils {
 			return false;
 		}
 
+		// 根据不同的BD类型获取AnnotationMetadata
 		AnnotationMetadata metadata;
 		if (beanDef instanceof AnnotatedBeanDefinition &&
 				className.equals(((AnnotatedBeanDefinition) beanDef).getMetadata().getClassName())) {
@@ -109,6 +110,7 @@ abstract class ConfigurationClassUtils {
 			}
 		}
 
+		// 判断Bean配置类类型 Full or Life
 		if (isFullConfigurationCandidate(metadata)) {
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL);
 		}
@@ -120,6 +122,7 @@ abstract class ConfigurationClassUtils {
 		}
 
 		// It's a full or lite configuration candidate... Let's determine the order value, if any.
+		// 配置类解析顺序
 		Integer order = getOrder(metadata);
 		if (order != null) {
 			beanDef.setAttribute(ORDER_ATTRIBUTE, order);

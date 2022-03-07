@@ -126,6 +126,7 @@ class ConfigurationClassBeanDefinitionReader {
 	private void loadBeanDefinitionsForConfigurationClass(
 			ConfigurationClass configClass, TrackedConditionEvaluator trackedConditionEvaluator) {
 
+		// 判断配置类上是否存在条件注解
 		if (trackedConditionEvaluator.shouldSkip(configClass)) {
 			String beanName = configClass.getBeanName();
 			if (StringUtils.hasLength(beanName) && this.registry.containsBeanDefinition(beanName)) {
@@ -135,10 +136,13 @@ class ConfigurationClassBeanDefinitionReader {
 			return;
 		}
 
+		// 是否存在import注解
 		if (configClass.isImported()) {
+			// 注册import引入的配置类
 			registerBeanDefinitionForImportedConfigurationClass(configClass);
 		}
 		for (BeanMethod beanMethod : configClass.getBeanMethods()) {
+			// 根据BeanMethod注册BD
 			loadBeanDefinitionsForBeanMethod(beanMethod);
 		}
 
