@@ -61,6 +61,16 @@ import org.springframework.core.annotation.AliasFor;
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
+/**
+ * 作用于组件，两个核心字段 作用域 scopeName 默认单例 ，代理模式proxyMode：默认不使用代理
+ * scopeName:
+ * ConfigurableBeanFactory.SCOPE_PROTOTYPE，即“prototype”
+ * ConfigurableBeanFactory.SCOPE_SINGLETON，即“singleton”
+ * WebApplicationContext.SCOPE_REQUEST，即“request”
+ * WebApplicationContext.SCOPE_SESSION，即“session”
+ *
+ * {@link ScopedProxyMode#DEFAULT}
+ */
 public @interface Scope {
 
 	/**
