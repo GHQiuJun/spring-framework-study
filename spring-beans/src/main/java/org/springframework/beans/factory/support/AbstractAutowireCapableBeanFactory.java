@@ -547,6 +547,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {
+					// AutowiredAnnotationBeanPostProcessor.postProcessMergedBeanDefinition
+					// 配合 postProcessPropertyValues 方法一起处理字段或方法注入。解析标注有 @Autowired 的注入点元信息 InjectionMetadata，底层调用 findAutowiringMetadata 方法解析注入点元信息。
 					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
 				}
 				catch (Throwable ex) {
@@ -1135,6 +1137,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		// No special handling: simply use no-arg constructor.
+		// 使用无参构造器
 		return instantiateBean(beanName, mbd);
 	}
 
@@ -1207,6 +1210,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {
 				if (bp instanceof SmartInstantiationAwareBeanPostProcessor) {
 					SmartInstantiationAwareBeanPostProcessor ibp = (SmartInstantiationAwareBeanPostProcessor) bp;
+					/**
+					 * 推断候选构造器算法：
+					 * 1、尝试从缓存中获取
+					 * 2、获取所有构造器，遍历所有构造器
+					 * 3、检查当前类和父类是否存在@Autowired注解，如果存在放入候选列表（如存在required=true的构造器，则只能存在一个@Autowired，否则抛出异常）
+					 * 4、如果不存在@Autowired注解，如果只存在一个构造函数，且参数>0,放入候选构造器
+					 */
 					Constructor<?>[] ctors = ibp.determineCandidateConstructors(beanClass, beanName);
 					if (ctors != null) {
 						return ctors;
@@ -1342,6 +1352,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				for (BeanPostProcessor bp : getBeanPostProcessors()) {
 					if (bp instanceof InstantiationAwareBeanPostProcessor) {
 						InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
+						// 根据元信息 InjectionMetadata，在 Spring IoC 容器中查找依赖注入到 bean 中
 						pvs = ibp.postProcessPropertyValues(pvs, filteredPds, bw.getWrappedInstance(), beanName);
 						if (pvs == null) {
 							return;

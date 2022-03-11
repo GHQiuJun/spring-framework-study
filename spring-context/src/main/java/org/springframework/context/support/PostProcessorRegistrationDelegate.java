@@ -51,6 +51,7 @@ final class PostProcessorRegistrationDelegate {
 	public static void invokeBeanFactoryPostProcessors(
 			ConfigurableListableBeanFactory beanFactory, List<BeanFactoryPostProcessor> beanFactoryPostProcessors) {
 
+		// beanFactoryPostProcessors 从哪里注册进来？？
 		// Invoke BeanDefinitionRegistryPostProcessors first, if any.
 		// 调用所有实现BeanDefinitionRegistry的类，进行BD注册
 		Set<String> processedBeans = new HashSet<>();
@@ -154,6 +155,7 @@ final class PostProcessorRegistrationDelegate {
 		// Separate between BeanFactoryPostProcessors that implement PriorityOrdered,
 		// Ordered, and the rest.
 		List<BeanFactoryPostProcessor> priorityOrderedPostProcessors = new ArrayList<>();
+		// 分离实现了PriorityOrdered接口、Ordered接口和未实现的BeanFactoryPostProcessors
 		List<String> orderedPostProcessorNames = new ArrayList<>();
 		List<String> nonOrderedPostProcessorNames = new ArrayList<>();
 		for (String ppName : postProcessorNames) {
