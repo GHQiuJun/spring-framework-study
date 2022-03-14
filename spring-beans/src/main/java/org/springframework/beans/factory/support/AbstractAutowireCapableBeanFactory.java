@@ -414,6 +414,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		for (BeanPostProcessor processor : getBeanPostProcessors()) {
 			/**
 			 * 1、PostConstruct，PreDestroy 执行 -> CommonAnnotationBeanPostProcessor
+			 * 2、处理aware接口  -> ApplicationContextAwareProcessor内置
 			 */
 			Object current = processor.postProcessBeforeInitialization(result, beanName);
 			if (current == null) {
