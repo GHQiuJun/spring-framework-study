@@ -367,6 +367,7 @@ public class JdbcTemplate extends JdbcAccessor implements JdbcOperations {
 	public <T> T execute(StatementCallback<T> action) throws DataAccessException {
 		Assert.notNull(action, "Callback object must not be null");
 
+		// 查看当前线程是否已经绑定连接(key 为 dataSource)，已绑定则直接返回，未绑定则创建连接并绑定（当使用事务时）
 		Connection con = DataSourceUtils.getConnection(obtainDataSource());
 		Statement stmt = null;
 		try {
@@ -382,12 +383,14 @@ public class JdbcTemplate extends JdbcAccessor implements JdbcOperations {
 			String sql = getSql(action);
 			JdbcUtils.closeStatement(stmt);
 			stmt = null;
+			// 释放连接
 			DataSourceUtils.releaseConnection(con, getDataSource());
 			con = null;
 			throw translateException("StatementCallback", sql, ex);
 		}
 		finally {
 			JdbcUtils.closeStatement(stmt);
+			// 释放连接
 			DataSourceUtils.releaseConnection(con, getDataSource());
 		}
 	}

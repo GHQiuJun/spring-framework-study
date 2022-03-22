@@ -75,6 +75,7 @@ public abstract class DataSourceUtils {
 	 */
 	public static Connection getConnection(DataSource dataSource) throws CannotGetJdbcConnectionException {
 		try {
+			// 获取connection
 			return doGetConnection(dataSource);
 		}
 		catch (SQLException ex) {
@@ -100,6 +101,7 @@ public abstract class DataSourceUtils {
 	public static Connection doGetConnection(DataSource dataSource) throws SQLException {
 		Assert.notNull(dataSource, "No DataSource specified");
 
+		// 如果已存在获取 ConnectionHolder 持有conn （仅当使用事务才会将ConnectionHolder绑定到线程)
 		ConnectionHolder conHolder = (ConnectionHolder) TransactionSynchronizationManager.getResource(dataSource);
 		if (conHolder != null && (conHolder.hasConnection() || conHolder.isSynchronizedWithTransaction())) {
 			conHolder.requested();
@@ -111,9 +113,11 @@ public abstract class DataSourceUtils {
 		}
 		// Else we either got no holder or an empty thread-bound holder here.
 
+		// 如果不存在
 		logger.debug("Fetching JDBC Connection from DataSource");
 		Connection con = fetchConnection(dataSource);
 
+		// if transaction synchronization(事务同步) is active for the current thread
 		if (TransactionSynchronizationManager.isSynchronizationActive()) {
 			try {
 				// Use same Connection for further JDBC actions within the transaction.
@@ -337,12 +341,14 @@ public abstract class DataSourceUtils {
 		}
 		if (dataSource != null) {
 			ConnectionHolder conHolder = (ConnectionHolder) TransactionSynchronizationManager.getResource(dataSource);
+			// It's the transactional Connection
 			if (conHolder != null && connectionEquals(conHolder, con)) {
 				// It's the transactional Connection: Don't close it.
 				conHolder.released();
 				return;
 			}
 		}
+		// It's not the transactional Connection
 		doCloseConnection(con, dataSource);
 	}
 

@@ -339,6 +339,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 	 */
 	@Override
 	public final TransactionStatus getTransaction(@Nullable TransactionDefinition definition) throws TransactionException {
+		// 获取事务，若当前线程已绑定，则从线程中获取，使用dataSource作为key ,value = ConnectionHolder
 		Object transaction = doGetTransaction();
 
 		// Cache debug flag to avoid repeated checks.
@@ -350,6 +351,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 		}
 
 		if (isExistingTransaction(transaction)) {
+			// 如果存在事务传递，根据设置的事务传播机制进行处理
 			// Existing transaction found -> check propagation behavior to find out how to behave.
 			return handleExistingTransaction(definition, transaction, debugEnabled);
 		}
@@ -411,12 +413,14 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 			if (debugEnabled) {
 				logger.debug("Suspending current transaction");
 			}
+			// 事务挂起
 			Object suspendedResources = suspend(transaction);
 			boolean newSynchronization = (getTransactionSynchronization() == SYNCHRONIZATION_ALWAYS);
 			return prepareTransactionStatus(
 					definition, null, false, newSynchronization, debugEnabled, suspendedResources);
 		}
 
+		// 嵌套事务，挂起当前事务，开启新事务
 		if (definition.getPropagationBehavior() == TransactionDefinition.PROPAGATION_REQUIRES_NEW) {
 			if (debugEnabled) {
 				logger.debug("Suspending current transaction, creating new transaction with name [" +
