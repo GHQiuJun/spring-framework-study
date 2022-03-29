@@ -743,6 +743,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 					status.releaseHeldSavepoint();
 				}
 				else if (status.isNewTransaction()) {
+					// 嵌套事务事务若使用外层事务，不会执行提交，只有外层事务提交完毕后才会进行提交
 					if (status.isDebug()) {
 						logger.debug("Initiating transaction commit");
 					}
